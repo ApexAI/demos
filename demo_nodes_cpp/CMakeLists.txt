@@ -70,6 +70,7 @@ add_library(parameters_library SHARED
 add_library(topics_library SHARED
   src/topics/talker.cpp
   src/topics/talker_loaned_message.cpp
+  src/topics/talker_loaned_message_pod.cpp
   src/topics/talker_serialized_message.cpp
   src/topics/talker_pod_counter.cpp
   src/topics/listener.cpp
@@ -117,6 +118,9 @@ rclcpp_components_register_node(topics_library
 rclcpp_components_register_node(topics_library
   PLUGIN "demo_nodes_cpp::LoanedMessageTalker"
   EXECUTABLE talker_loaned_message)
+rclcpp_components_register_node(topics_library
+  PLUGIN "demo_nodes_cpp::LoanedMessageTalkerPod"
+  EXECUTABLE talker_loaned_message_pod)
 rclcpp_components_register_node(topics_library
   PLUGIN "demo_nodes_cpp::SerializedMessageTalker"
   EXECUTABLE talker_serialized_message)
