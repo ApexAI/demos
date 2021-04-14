@@ -165,7 +165,9 @@ if(BUILD_TESTING)
     parameter_events
     set_and_get_parameters_async
     set_and_get_parameters
-    "talker:listener")
+    "talker:listener"
+    "talker_pod_counter:listener_pod_counter"
+    "talker_loaned_message_pod:listener_pod_counter")
   set(service_tutorial_tests
     "add_two_ints_server:add_two_ints_client"
     "add_two_ints_server:add_two_ints_client_async"

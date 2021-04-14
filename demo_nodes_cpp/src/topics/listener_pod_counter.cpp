@@ -12,6 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include <memory>
+
 #include "rclcpp/rclcpp.hpp"
 #include "rclcpp_components/register_node_macro.hpp"
 
@@ -37,7 +39,7 @@ public:
     auto callback =
       [this](const std::shared_ptr<std_msgs::msg::UInt64> msg) -> void
       {
-        RCLCPP_INFO(this->get_logger(), "I heard: [%lu]", msg->data);
+        RCLCPP_INFO(this->get_logger(), "I heard: [Hello World: %lu]", msg->data);
       };
 
     // Create a subscription to the topic which can be matched with one or more compatible ROS

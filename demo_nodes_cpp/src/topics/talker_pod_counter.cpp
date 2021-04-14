@@ -44,14 +44,14 @@ public:
       {
         msg_ = std::make_unique<std_msgs::msg::UInt64>();
         msg_->data = count_++;
-        RCLCPP_INFO(this->get_logger(), "Publishing: '%lu'", msg_->data);
-       
+        RCLCPP_INFO(this->get_logger(), "Publishing: 'Hello World: %lu'", msg_->data);
+
         // Put the message into a queue to be processed by the middleware.
         // This call is non-blocking.
         pub_->publish(std::move(msg_));
       };
     // Create a publisher with a custom Quality of Service profile.
-    rclcpp::QoS qos(rclcpp::KeepLast(7));   
+    rclcpp::QoS qos(rclcpp::KeepLast(7));
     pub_ = this->create_publisher<std_msgs::msg::UInt64>("chatter", qos);
 
     // Use a timer to schedule periodic message publishing.
@@ -61,7 +61,7 @@ public:
 private:
   size_t count_ = 1;
   std::unique_ptr<std_msgs::msg::UInt64> msg_;
-  rclcpp::Publisher<std_msgs::msg::UInt64>::SharedPtr pub_;  
+  rclcpp::Publisher<std_msgs::msg::UInt64>::SharedPtr pub_;
   rclcpp::TimerBase::SharedPtr timer_;
 };
 
