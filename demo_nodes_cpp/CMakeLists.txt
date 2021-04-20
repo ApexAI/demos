@@ -72,9 +72,11 @@ add_library(topics_library SHARED
   src/topics/talker_loaned_message.cpp
   src/topics/talker_loaned_message_pod.cpp
   src/topics/talker_serialized_message.cpp
+  src/topics/talker_serialized_message_pod.cpp
   src/topics/talker_pod_counter.cpp
   src/topics/listener.cpp
   src/topics/listener_serialized_message.cpp
+  src/topics/listener_serialized_message_pod.cpp
   src/topics/listener_best_effort.cpp
   src/topics/listener_pod_counter.cpp)
 add_demo_dependencies(timers_library)
@@ -125,6 +127,9 @@ rclcpp_components_register_node(topics_library
   PLUGIN "demo_nodes_cpp::SerializedMessageTalker"
   EXECUTABLE talker_serialized_message)
 rclcpp_components_register_node(topics_library
+  PLUGIN "demo_nodes_cpp::SerializedMessageTalkerPod"
+  EXECUTABLE talker_serialized_message_pod)
+rclcpp_components_register_node(topics_library
   PLUGIN "demo_nodes_cpp::PodCounterTalker"
   EXECUTABLE talker_pod_counter)
 rclcpp_components_register_node(topics_library
@@ -133,6 +138,9 @@ rclcpp_components_register_node(topics_library
 rclcpp_components_register_node(topics_library
   PLUGIN "demo_nodes_cpp::SerializedMessageListener"
   EXECUTABLE listener_serialized_message)
+rclcpp_components_register_node(topics_library
+  PLUGIN "demo_nodes_cpp::SerializedMessageListenerPod"
+  EXECUTABLE listener_serialized_message_pod)
 rclcpp_components_register_node(topics_library
   PLUGIN "demo_nodes_cpp::ListenerBestEffort"
   EXECUTABLE listener_best_effort)
@@ -167,7 +175,9 @@ if(BUILD_TESTING)
     set_and_get_parameters
     "talker:listener"
     "talker_pod_counter:listener_pod_counter"
-    "talker_loaned_message_pod:listener_pod_counter")
+    "talker_loaned_message_pod:listener_pod_counter"
+    "talker_serialized_message:listener_serialized_message"
+    "talker_serialized_message_pod:listener_serialized_message_pod")
   set(service_tutorial_tests
     "add_two_ints_server:add_two_ints_client"
     "add_two_ints_server:add_two_ints_client_async"

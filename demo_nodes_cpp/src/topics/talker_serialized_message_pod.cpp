@@ -21,7 +21,7 @@
 
 #include "rcutils/allocator.h"
 
-#include "std_msgs/msg/string.hpp"
+#include "std_msgs/msg/u_int64.hpp"
 
 #include "rclcpp/serialization.hpp"
 
@@ -32,12 +32,12 @@ using namespace std::chrono_literals;
 namespace demo_nodes_cpp
 {
 
-class SerializedMessageTalker : public rclcpp::Node
+class SerializedMessageTalkerPod : public rclcpp::Node
 {
 public:
   DEMO_NODES_CPP_PUBLIC
-  explicit SerializedMessageTalker(const rclcpp::NodeOptions & options)
-  : Node("serialized_message_talker", options),
+  explicit SerializedMessageTalkerPod(const rclcpp::NodeOptions & options)
+  : Node("serialized_message_talker_pod", options),
     serialized_msg_(0u)
   {
     // Create a function for when messages are to be sent.
@@ -58,8 +58,8 @@ public:
         // In order to ease things up, we call the rmw_serialize function,
         // which can do the above conversion for us.
         // For this, we initially fill up a std_msgs/String message and fill up its content
-        auto string_msg = std::make_shared<std_msgs::msg::String>();
-        string_msg->data = "Hello World: " + std::to_string(count_++);
+        auto pod_msg = std::make_shared<std_msgs::msg::UInt64>();
+        pod_msg->data = count_++;
 
         // We know the size of the data to be sent, and thus can pre-allocate the
         // necessary memory to hold all the data.
@@ -68,15 +68,15 @@ public:
         // If we don't allocate enough memory, the serialized message will be
         // dynamically allocated before sending it to the wire.
         auto message_header_length = 8u;
-        auto message_payload_length = static_cast<size_t>(string_msg->data.size());
-        serialized_msg_.reserve(message_header_length + message_payload_length);
+        // auto message_payload_length = static_cast<size_t>(pod_msg->data.size());
+        serialized_msg_.reserve(message_header_length + sizeof(pod_msg->data));
 
-        static rclcpp::Serialization<std_msgs::msg::String> serializer;
-        serializer.serialize_message(string_msg.get(), &serialized_msg_);
+        static rclcpp::Serialization<std_msgs::msg::UInt64> serializer;
+        serializer.serialize_message(pod_msg.get(), &serialized_msg_);
 
         // For demonstration we print the ROS2 message format
         printf("ROS message:\n");
-        RCLCPP_INFO(this->get_logger(), "Publishing: '%s'", string_msg->data.c_str());
+        RCLCPP_INFO(this->get_logger(), "Publishing: 'Hello World: %lu'", pod_msg->data);
         fflush(stdout);
         // And after the corresponding binary representation
         printf("serialized message:\n");
@@ -89,7 +89,7 @@ public:
       };
 
     rclcpp::QoS qos(rclcpp::KeepLast(7));
-    pub_ = this->create_publisher<std_msgs::msg::String>("chatter", qos);
+    pub_ = this->create_publisher<std_msgs::msg::UInt64>("chatter_pod", qos);
 
     // Use a timer to schedule periodic message publishing.
     timer_ = this->create_wall_timer(1s, publish_message);
@@ -98,10 +98,10 @@ public:
 private:
   size_t count_ = 1;
   rclcpp::SerializedMessage serialized_msg_;
-  rclcpp::Publisher<std_msgs::msg::String>::SharedPtr pub_;
+  rclcpp::Publisher<std_msgs::msg::UInt64>::SharedPtr pub_;
   rclcpp::TimerBase::SharedPtr timer_;
 };
 
 }  // namespace demo_nodes_cpp
 
-RCLCPP_COMPONENTS_REGISTER_NODE(demo_nodes_cpp::SerializedMessageTalker)
+RCLCPP_COMPONENTS_REGISTER_NODE(demo_nodes_cpp::SerializedMessageTalkerPod)

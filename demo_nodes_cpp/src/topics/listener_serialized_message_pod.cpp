@@ -20,7 +20,7 @@
 #include "rclcpp/serialization.hpp"
 #include "rclcpp_components/register_node_macro.hpp"
 
-#include "std_msgs/msg/string.hpp"
+#include "std_msgs/msg/u_int64.hpp"
 
 #include "rosidl_typesupport_cpp/message_type_support.hpp"
 
@@ -30,12 +30,12 @@ namespace demo_nodes_cpp
 {
 // Create a Listener class that subclasses the generic rclcpp::Node base class.
 // The main function below will instantiate the class as a ROS node.
-class SerializedMessageListener : public rclcpp::Node
+class SerializedMessageListenerPod : public rclcpp::Node
 {
 public:
   DEMO_NODES_CPP_PUBLIC
-  explicit SerializedMessageListener(const rclcpp::NodeOptions & options)
-  : Node("serialized_message_listener", options)
+  explicit SerializedMessageListenerPod(const rclcpp::NodeOptions & options)
+  : Node("serialized_message_listener_pod", options)
   {
     setvbuf(stdout, NULL, _IONBF, BUFSIZ);
     // We create a callback to a rmw_serialized_message_t here. This will pass a serialized
@@ -55,24 +55,24 @@ public:
 
         // In order to deserialize the message we have to manually create a ROS2
         // message in which we want to convert the serialized data.
-        using MessageT = std_msgs::msg::String;
-        MessageT string_msg;
+        using MessageT = std_msgs::msg::UInt64;
+        MessageT pod_msg;
         auto serializer = rclcpp::Serialization<MessageT>();
-        serializer.deserialize_message(msg.get(), &string_msg);
+        serializer.deserialize_message(msg.get(), &pod_msg);
         // Finally print the ROS2 message data
-        RCLCPP_INFO(this->get_logger(), "I heard: [%s]", string_msg.data.c_str());
+        RCLCPP_INFO(this->get_logger(), "I heard: [Hello World: %lu]", pod_msg.data);
       };
     // Create a subscription to the topic which can be matched with one or more compatible ROS
     // publishers.
     // Note that not all publishers on the same topic with the same type will be compatible:
     // they must have compatible Quality of Service policies.
-    sub_ = create_subscription<std_msgs::msg::String>("chatter", 10, callback);
+    sub_ = create_subscription<std_msgs::msg::UInt64>("chatter_pod", 10, callback);
   }
 
 private:
-  rclcpp::Subscription<std_msgs::msg::String>::SharedPtr sub_;
+  rclcpp::Subscription<rclcpp::SerializedMessage>::SharedPtr sub_;
 };
 
 }  // namespace demo_nodes_cpp
 
-RCLCPP_COMPONENTS_REGISTER_NODE(demo_nodes_cpp::SerializedMessageListener)
+RCLCPP_COMPONENTS_REGISTER_NODE(demo_nodes_cpp::SerializedMessageListenerPod)
