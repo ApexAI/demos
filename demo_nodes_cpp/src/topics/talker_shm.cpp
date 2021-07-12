@@ -20,12 +20,13 @@
 #include <string>
 #include <utility>
 
-#include "demo_nodes_cpp/visibility_control.h"
 #include "rclcpp/rclcpp.hpp"
 #include "rclcpp_components/register_node_macro.hpp"
 #include "rcutils/cmdline_parser.h"
 
 #include "example_interfaces/msg/shm_topic.hpp"
+
+#include "demo_nodes_cpp/visibility_control.h"
 
 using namespace std::chrono_literals;
 
@@ -36,10 +37,9 @@ private:
   using Topic = example_interfaces::msg::ShmTopic;
 
 public:
-  DEMO_NODES_CPP_PUBLIC
-  explicit ShmDemoTalker(const rclcpp::NodeOptions &options)
+  DEMO_NODES_CPP_PUBLIC explicit ShmDemoTalker(
+      const rclcpp::NodeOptions &options)
       : Node("shm_demo_talker", options) {
-
     setvbuf(stdout, NULL, _IONBF, BUFSIZ);
 
     auto publishMessage = [this]() -> void {
@@ -48,12 +48,14 @@ public:
       populateLoanedMessage(loanedMsg);
 
       m_publisher->publish(std::move(loanedMsg));
+      // loanedMsg is not supposed to be accessed anymore,
+      // we gave up ownership
 
       m_count++;
     };
 
-    rclcpp::QoS qos(rclcpp::KeepLast(7));
-    m_publisher = this->create_publisher<Topic>("my_shm_topic", qos);
+    rclcpp::QoS qos(rclcpp::KeepLast(10));
+    m_publisher = this->create_publisher<Topic>("chatter", qos);
 
     // Use a timer to schedule periodic message publishing.
     m_timer = this->create_wall_timer(1s, publishMessage);
@@ -67,20 +69,28 @@ private:
   void populateLoanedMessage(rclcpp::LoanedMessage<Topic> &loanedMsg) {
     Topic &msg = loanedMsg.get();
 
+    // Create the data.
+    // We should also assume that in practice the message string is not
+    // constant.
+
     std::string hello{"Hello World"};
 
-    // not a nice way to fill the data but msg.data is a std::array
-    // we should also assume that in practice the message string is not constant
-    // this actually circumvents the C++ type system
-    std::strncpy((char *)msg.data.data(), hello.data(), 256);
+    // Not a nice way to fill the data but msg.data is a std::array
+    // Hence this does not work
+    // msg.data = hello.data();
+    // msg.data = hello;
+
+    constexpr size_t MAX_SIZE = 255;
+    msg.size = (uint8_t)std::min(hello.size(), MAX_SIZE);
+    msg.counter = m_count;
+
+    std::memcpy(msg.data.data(), hello.data(), msg.size);
 
     // This copy here should be seen as creating/generating the data in place.
     // Depending on whether the loaned message initializes the memory of msg
-    // this is not completely possible as of now.
+    // this is not optimal as of now.
     // I.e. it is default initialized and then overwritten here, incurring
     // unnecessary overhead.
-
-    msg.counter = m_count;
 
     RCLCPP_INFO(this->get_logger(), "Publishing: %s %lu", hello.c_str(),
                 msg.counter);
