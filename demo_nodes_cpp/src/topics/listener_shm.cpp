@@ -36,15 +36,13 @@ public:
     // subscription callback to process arriving data
     auto callback = [this](const Topic::SharedPtr msg) -> void {
       // Read the message and perform operations accordingly.
+      // Here we copy the data and display it.
 
-      // transform to string for output
-      // Note: dealing with std::array as underlying type fixed size string is
-      // not nice to use.
+      std::memcpy(m_lastData, msg->data.data(), msg->size);
+      m_lastData[Topic::MAX_SIZE] =
+          '\0'; // in case there was no zero termination
 
-      std::memcpy(m_buffer, msg->data.data(), msg->size);
-      m_buffer[255] = '\0'; // in case there was no proper zero termination
-
-      RCLCPP_INFO(this->get_logger(), "Received: %s %lu", m_buffer,
+      RCLCPP_INFO(this->get_logger(), "Received: %s %lu", m_lastData,
                   msg->counter);
     };
 
@@ -55,7 +53,7 @@ public:
 private:
   rclcpp::Subscription<Topic>::SharedPtr m_subscription;
 
-  char m_buffer[256];
+  char m_lastData[256];
 };
 
 } // namespace demo_nodes_cpp
