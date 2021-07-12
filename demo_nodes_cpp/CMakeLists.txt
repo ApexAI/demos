@@ -73,7 +73,8 @@ add_library(topics_library SHARED
   src/topics/talker_serialized_message.cpp
   src/topics/listener.cpp
   src/topics/listener_serialized_message.cpp
-  src/topics/listener_best_effort.cpp)
+  src/topics/listener_best_effort.cpp
+  src/topics/talker_shm.cpp)
 add_demo_dependencies(timers_library)
 add_demo_dependencies(services_library)
 add_demo_dependencies(parameters_library)
